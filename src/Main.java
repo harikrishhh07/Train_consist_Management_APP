@@ -1,10 +1,9 @@
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Main {
 
-    // Create a Bogie class with fields such as name and capacity
     static class Bogie {
         private String name;
         private int capacity;
@@ -31,24 +30,28 @@ public class Main {
     public static void main(String[] args) {
         System.out.println("=== Train Consist Management App ===");
 
-        // Create a List<Bogie> to store passenger bogies
+        // Create a List<Bogie> to store passenger bogies (simulating UC7 creation)
         List<Bogie> bogies = new ArrayList<>();
-
         bogies.add(new Bogie("Sleeper", 72));
         bogies.add(new Bogie("AC Chair", 56));
+        bogies.add(new Bogie("Second Class", 90));
         bogies.add(new Bogie("First Class", 24));
 
-        System.out.println("Before Sorting:");
-        for (Bogie b : bogies) {
-            System.out.println(b);
-        }
+        System.out.println("Original Bogie List:");
+        bogies.forEach(System.out::println);
 
-        // Use Comparator.comparingInt() to define sorting based on capacity
-        bogies.sort(Comparator.comparingInt(Bogie::getCapacity));
+        System.out.println("\n--- Filtering Logic Execution ---");
 
-        System.out.println("\nAfter Sorting by Capacity (Ascending):");
-        for (Bogie b : bogies) {
-            System.out.println(b);
-        }
+        // Apply filter(b -> b.capacity > 60)
+        int threshold = 60;
+        List<Bogie> highCapacityBogies = bogies.stream()
+                .filter(b -> b.getCapacity() > threshold)
+                .collect(Collectors.toList());
+
+        System.out.println("\nBogies with capacity > " + threshold + ":");
+        highCapacityBogies.forEach(System.out::println);
+
+        System.out.println("\n--- Original Collection Integrity ---");
+        System.out.println("Original List Size: " + bogies.size() + " (Unchanged)");
     }
 }
