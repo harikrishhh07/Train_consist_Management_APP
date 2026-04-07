@@ -1,21 +1,19 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Main {
 
     static class Bogie {
-        private String type;
+        private String name;
         private int capacity;
 
-        public Bogie(String type, int capacity) {
-            this.type = type;
+        public Bogie(String name, int capacity) {
+            this.name = name;
             this.capacity = capacity;
         }
 
-        public String getType() {
-            return type;
+        public String getName() {
+            return name;
         }
 
         public int getCapacity() {
@@ -24,37 +22,40 @@ public class Main {
 
         @Override
         public String toString() {
-            return "Bogie [type=" + type + ", capacity=" + capacity + "]";
+            return "Bogie [name=" + name + ", capacity=" + capacity + "]";
         }
     }
 
     public static void main(String[] args) {
         System.out.println("=== Train Consist Management App ===");
 
-        // Create a List of bogies with intentional duplicates to test grouping logic
+        // Create a List of bogies
         List<Bogie> bogies = new ArrayList<>();
         bogies.add(new Bogie("Sleeper", 72));
-        bogies.add(new Bogie("Sleeper", 72)); // Second sleeper
         bogies.add(new Bogie("AC Chair", 56));
         bogies.add(new Bogie("First Class", 24));
-        bogies.add(new Bogie("First Class", 24)); // Second first class
+        bogies.add(new Bogie("Second Class", 90));
 
-        System.out.println("Original Bogie List Size: " + bogies.size());
+        System.out.println("Original Bogie List:");
+        bogies.forEach(System.out::println);
 
-        System.out.println("\n--- Executing Grouping Operation ---");
-        // Apply Collectors.groupingBy() based on bogie type
-        Map<String, List<Bogie>> groupedBogies = bogies.stream()
-                .collect(Collectors.groupingBy(Bogie::getType));
+        System.out.println("\n--- Calculating Total Seating Capacity ---");
 
-        // Display the grouped structure clearly showing keys and lists
-        System.out.println("\nGrouped Bogie Structure:");
-        for (Map.Entry<String, List<Bogie>> entry : groupedBogies.entrySet()) {
-            System.out.println("Category [" + entry.getKey() + "] contains " + entry.getValue().size() + " bogies:");
-            entry.getValue().forEach(b -> System.out.println("   -> " + b));
-        }
+        // 1. Transform each bogie to numeric capacity via map()
+        // 2. Aggregate capacities into single sum via reduce()
+        int totalSeats = bogies.stream()
+                .map(Bogie::getCapacity)
+                .reduce(0, Integer::sum);
 
-        // Integrity check
-        System.out.println("\n--- Integrity Check ---");
-        System.out.println("Collection remains unmodified? " + (bogies.size() == 5));
+        System.out.println("Total Seating Capacity: " + totalSeats + " seats");
+
+        System.out.println("\n--- Edge Case Testing (Based on UC Specs) ---");
+        // Test case verification: empty collection handling
+        List<Bogie> emptyBogies = new ArrayList<>();
+        int emptyTotal = emptyBogies.stream().map(Bogie::getCapacity).reduce(0, Integer::sum);
+        System.out.println("Empty List Capacity (Expected: 0): " + emptyTotal);
+
+        // Integrity verification
+        System.out.println("Original List Unchanged Check (Expected Size=4): " + bogies.size());
     }
 }
