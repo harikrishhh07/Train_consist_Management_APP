@@ -1,60 +1,70 @@
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class Main {
 
-    // Regex explicitly defining format TRN-XXXX (4 digits)
-    private static final Pattern TRAIN_ID_PATTERN = Pattern.compile("^TRN-\\d{4}$");
+    static class GoodsBogie {
+        private String type;
+        private String cargo;
 
-    // Regex explicitly defining format PET-XX (2 uppercase letters)
-    private static final Pattern CARGO_CODE_PATTERN = Pattern.compile("^PET-[A-Z]{2}$");
+        public GoodsBogie(String type, String cargo) {
+            this.type = type;
+            this.cargo = cargo;
+        }
 
-    public static boolean validateTrainId(String trainId) {
-        if (trainId == null) return false;
-        Matcher matcher = TRAIN_ID_PATTERN.matcher(trainId);
-        return matcher.matches();
+        public String getType() {
+            return type;
+        }
+
+        public String getCargo() {
+            return cargo;
+        }
+
+        @Override
+        public String toString() {
+            return "GoodsBogie [type=" + type + ", cargo=" + cargo + "]";
+        }
     }
 
-    public static boolean validateCargoCode(String cargoCode) {
-        if (cargoCode == null) return false;
-        Matcher matcher = CARGO_CODE_PATTERN.matcher(cargoCode);
-        return matcher.matches();
+    // Encapsulated safety compliance logic using Streams API and allMatch()
+    public static boolean checkSafetyCompliance(List<GoodsBogie> bogies) {
+        return bogies.stream()
+                .allMatch(b -> !b.getType().equalsIgnoreCase("Cylindrical")
+                        || b.getCargo().equalsIgnoreCase("Petroleum"));
     }
 
     public static void main(String[] args) {
         System.out.println("=== Train Consist Management App ===");
-        System.out.println("--- Validation Execution ---");
+        System.out.println("--- UC12: Safety Compliance Execution ---\n");
 
-        System.out.println("\n[1] Train ID Validation Testing");
-        List<String> trainIds = Arrays.asList(
-                "TRN-1234",   // Valid
-                "TRAIN12",    // Invalid: Wrong prefix
-                "TRN12A",     // Invalid: Missing dash and letters present
-                "1234-TRN",   // Invalid: Reverse order
-                "TRN-123",    // Invalid: Too few digits
-                "TRN-12345",  // Invalid: Too many digits
-                ""            // Invalid: Empty string
+        System.out.println("[Test 1: All Valid Bogies]");
+        List<GoodsBogie> safeTrain = Arrays.asList(
+                new GoodsBogie("Cylindrical", "Petroleum"),
+                new GoodsBogie("Box", "Coal"),
+                new GoodsBogie("Open", "Grain")
         );
+        safeTrain.forEach(System.out::println);
+        System.out.println("-> Safety Compliant? " + checkSafetyCompliance(safeTrain) + "\n");
 
-        for (String id : trainIds) {
-            System.out.println(String.format(" %-12s -> Valid? %b", "'" + id + "'", validateTrainId(id)));
-        }
-
-        System.out.println("\n[2] Cargo Code Validation Testing");
-        List<String> cargoCodes = Arrays.asList(
-                "PET-AB",     // Valid
-                "PET-ab",     // Invalid: Lowercase
-                "PET123",     // Invalid: Digits
-                "AB-PET",     // Invalid: Reverse
-                "PET-A",      // Invalid: Too few characters
-                "PET-ABC",    // Invalid: Too many characters
-                ""            // Invalid: Empty string
+        System.out.println("[Test 2: Invalid Cylindrical Cargo]");
+        List<GoodsBogie> unsafeTrain = Arrays.asList(
+                new GoodsBogie("Cylindrical", "Coal"), // Rule violation!
+                new GoodsBogie("Box", "Grain")
         );
+        unsafeTrain.forEach(System.out::println);
+        System.out.println("-> Safety Compliant? " + checkSafetyCompliance(unsafeTrain) + "\n");
 
-        for (String code : cargoCodes) {
-            System.out.println(String.format(" %-12s -> Valid? %b", "'" + code + "'", validateCargoCode(code)));
-        }
+        System.out.println("[Test 3: Non-Cylindrical with Flexible Cargo]");
+        List<GoodsBogie> flexibleTrain = Arrays.asList(
+                new GoodsBogie("Box", "Petroleum"),    // Non-cylindrical can carry other loads
+                new GoodsBogie("Open", "Coal")
+        );
+        flexibleTrain.forEach(System.out::println);
+        System.out.println("-> Safety Compliant? " + checkSafetyCompliance(flexibleTrain) + "\n");
+
+        System.out.println("[Test 4: Empty Train Edge Case]");
+        List<GoodsBogie> emptyTrain = Collections.emptyList();
+        System.out.println("-> Empty Train Data Safety Compliant? " + checkSafetyCompliance(emptyTrain) + "\n");
     }
 }
